@@ -43,6 +43,18 @@ def handle_request(data,q):
                     q.put('File$$'+file)
         except:
             q.put('Error$$Directory does not exist')
+    
+    if request == 'cd':
+        path = data[1]
+        try:
+            if os.path.isdir(path):
+                new_dir = os.path.split(path)
+                response = 'Cd$${}'.format(new_dir[1])
+                q.put(response)
+            else:
+                q.put('Error$$Requested path is not a directory')
+        except:
+            q.put('Error$$Requested directory does not exists')
 
 def handle_client_recv(sock,addr):
     #Receive messages from client and broadcast them to

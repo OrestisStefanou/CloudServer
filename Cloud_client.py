@@ -2,6 +2,7 @@ import sys,os
 import socket
 import threading
 import tincanchat
+import copy
 from getpass import getpass
 
 def prRed(skk): print("\033[91m{}\033[00m" .format(skk),end='') 
@@ -20,6 +21,7 @@ homeDir = ''
 curDir = ''
 
 def handle_response(msg):
+    global curDir
     data = msg.split('$$')
     if data[0] == 'Error':
         prRed(data[1])
@@ -31,10 +33,15 @@ def handle_response(msg):
         print('  ',end='',flush=True)
         return
 
+    if data[0] == 'Cd':
+        curDir = os.path.join(curDir,data[1])
+        return
+
     print(data[1] + '  ',end='',flush=True)
     
 
 def handle_request(msg,sock):
+    global curDir
     data = msg.split(' ')
     request = data[0]
     if data[0] == 'mkdir':
@@ -50,6 +57,7 @@ def handle_request(msg,sock):
             print('')
             return
     
+
     if data[0] == 'ls':
         if len(data) == 1:  #List current directory
             msg = 'ls$$./{}'.format(curDir)
@@ -69,6 +77,27 @@ def handle_request(msg,sock):
                 prRed('Something went wrong')
                 print('')
                 return
+
+
+    if data[0] == 'cd':
+        if len(data) == 1:  #Change current directory to home directory
+            curDir = copy.deepcopy(homeDir)
+            return
+        else:
+            if data[1] == '..':
+                head_tail = os.path.split(curDir)
+                requestedDir = head_tail[0]
+                if len(requestedDir) < len(homeDir):
+                    prRed('Permission Denied')
+                    print('')
+                    return
+                else:
+                    curDir = requestedDir
+                    return
+            else:
+                path = os.path.join(curDir,data[1])
+                msg = 'cd$$./{}'.format(path)
+                tincanchat.send_msg(sock,msg)
 
 def handle_input(sock):
     #Prompt user for message and it to server
