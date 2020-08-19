@@ -8,9 +8,11 @@ HOST = tincanchat.HOST
 PORT = tincanchat.PORT
 
 send_queues = {}
+openfiles = {}
 lock = threading.Lock()
 
 def handle_request(data,q):
+    global openfiles
     request = data[0]
     #print('Request is ' + request)
     if request == '/Login':
@@ -55,6 +57,23 @@ def handle_request(data,q):
                 q.put('Error$$Requested path is not a directory')
         except:
             q.put('Error$$Requested directory does not exists')
+
+
+    if request == 'CreateFile':
+        path = data[1]
+        f = open(path,"w")
+        openfiles[path] = f
+
+    if request == 'Line':
+        line = data[1]
+        filename = data[2]
+        openfiles[filename].write(line)
+    
+    if request == 'CloseFile':
+        filename = data[1]
+        openfiles[filename].close()
+        del openfiles[filename]
+        q.put("Success$$File uploaded")
 
 def handle_client_recv(sock,addr):
     #Receive messages from client and broadcast them to

@@ -28,16 +28,23 @@ def handle_response(msg):
         print('')
         return
     
+    if data[0] == 'Success':
+        prGreen(data[1])
+        print('')
+        return
+    
     if data[0] == 'Dir':
         prCyan(data[1])
         print('  ',end='',flush=True)
         return
 
+    if data[0] == 'File':
+        print(data[1] + '  ',end='',flush=True)
+        return
+
     if data[0] == 'Cd':
         curDir = os.path.join(curDir,data[1])
         return
-
-    print(data[1] + '  ',end='',flush=True)
     
 
 def handle_request(msg,sock):
@@ -77,7 +84,7 @@ def handle_request(msg,sock):
                 prRed('Something went wrong')
                 print('')
                 return
-
+    
 
     if data[0] == 'cd':
         if len(data) == 1:  #Change current directory to home directory
@@ -99,10 +106,31 @@ def handle_request(msg,sock):
                 msg = 'cd$$./{}'.format(path)
                 tincanchat.send_msg(sock,msg)
 
-def handle_input(sock):
-    #Prompt user for message and it to server
-    #print("Type messages,enter to send.'q' to quit")
     
+    if data[0] == 'upload':
+        if len(data) == 1:  #File name not given
+            prRed('File name not given')
+            print('')
+            return
+        else:
+            path = os.path.split(data[1])
+            filename = path[1]
+            try:
+                f = open(data[1],"r")
+                msg = 'CreateFile$${}'.format(os.path.join(curDir,filename))
+                tincanchat.send_msg(sock,msg)
+                for line in f:
+                    msg = 'Line$${}$${}'.format(line,os.path.join(curDir,filename))
+                    tincanchat.send_msg(sock,msg)
+                msg = 'CloseFile$${}'.format(os.path.join(curDir,filename))
+                tincanchat.send_msg(sock,msg)
+            except:
+                prRed("File does not exist")
+                print('')
+                return
+
+def handle_input(sock):
+    #Prompt user for message and it to server    
     while True:
         prGreen(curDir + '$')
         msg = input()   #Blocks
@@ -111,10 +139,6 @@ def handle_input(sock):
             sock.close()
             break
         handle_request(msg,sock)
-        #try:
-        #    tincanchat.send_msg(sock,msg)   #Blocks until sent
-        #except (BrokenPipeError,ConnectionError):
-        #    break
 
 
 if __name__ == "__main__":
@@ -150,7 +174,8 @@ if __name__ == "__main__":
             print('\nConnection to server closed')
             sock.close()
             break
-
+    
+    #prGreen(curDir + '$')
     #Create thread for handling user input and message sending
     thread = threading.Thread(target=handle_input,args=[sock],daemon=True)
     thread.start()
@@ -162,7 +187,6 @@ if __name__ == "__main__":
             (msgs,rest) = tincanchat.recv_msgs(sock,rest)
             for msg in msgs:
                 handle_response(msg)
-
         except ConnectionError:
             print('Connection to server closed')
             sock.close()
