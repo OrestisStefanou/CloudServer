@@ -45,6 +45,7 @@ def handle_request(data,q):
                     q.put('File$$'+file)
         except:
             q.put('Error$$Directory does not exist')
+        return
     
     if request == 'cd':
         path = data[1]
@@ -57,23 +58,42 @@ def handle_request(data,q):
                 q.put('Error$$Requested path is not a directory')
         except:
             q.put('Error$$Requested directory does not exists')
-
+        return
 
     if request == 'CreateFile':
         path = data[1]
         f = open(path,"w")
         openfiles[path] = f
+        return
 
     if request == 'Line':
         line = data[1]
         filename = data[2]
         openfiles[filename].write(line)
+        return
     
     if request == 'CloseFile':
         filename = data[1]
         openfiles[filename].close()
         del openfiles[filename]
         q.put("Success$$File uploaded")
+        return
+
+    if request == 'Download':
+        file_path = data[1]
+        try:
+            f = open(file_path,"r")
+            msg = 'CreateFile$${}'.format(file_path)
+            q.put(msg)
+            for line in f:
+                msg = 'Line$${}'.format(line)
+                q.put(msg)
+            q.put('CloseFile')
+            f.close()
+        except:
+            q.put('Error$$File does not exist')
+        return
+
 
 def handle_client_recv(sock,addr):
     #Receive messages from client and broadcast them to

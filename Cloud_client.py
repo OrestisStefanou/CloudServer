@@ -19,9 +19,11 @@ PORT = tincanchat.PORT
 
 homeDir = ''
 curDir = ''
+DownloadFile = None     #File object in case of download from the server
 
 def handle_response(msg):
     global curDir
+    global DownloadFile
     data = msg.split('$$')
     if data[0] == 'Error':
         prRed(data[1])
@@ -46,6 +48,23 @@ def handle_response(msg):
         curDir = os.path.join(curDir,data[1])
         return
     
+
+    if data[0] == 'CreateFile':
+        path = os.path.split(data[1])
+        filename = path[1]
+        DownloadFile = open(filename,"w")
+        return
+    
+    if data[0] == 'Line':
+        line = data[1]
+        DownloadFile.write(line)
+        return
+    
+    if data[0] == 'CloseFile':
+        DownloadFile.close()
+        prGreen('File downloaded')
+        print('')
+        return
 
 def handle_request(msg,sock):
     global curDir
@@ -124,10 +143,24 @@ def handle_request(msg,sock):
                     tincanchat.send_msg(sock,msg)
                 msg = 'CloseFile$${}'.format(os.path.join(curDir,filename))
                 tincanchat.send_msg(sock,msg)
+                f.close()
             except:
                 prRed("File does not exist")
                 print('')
                 return
+
+
+    if data[0] == 'download':
+        if len(data) == 1:  #File name not given
+            prRed('File name not given')
+            print('')
+            return
+        else:
+            filename = data[1]
+            path = os.path.join(curDir,filename)
+            msg = 'Download$${}'.format(path)
+            tincanchat.send_msg(sock,msg)
+
 
 def handle_input(sock):
     #Prompt user for message and it to server    
