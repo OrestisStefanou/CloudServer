@@ -21,6 +21,20 @@ homeDir = ''
 curDir = ''
 DownloadFile = None     #File object in case of download from the server
 
+
+def printHelp():
+    prYellow("mkdir <DirName> ->creates a new directory")
+    print('')
+    prYellow("ls <DirName> ->Shows the files and subdirs of DirName")
+    print('')
+    prYellow("cd <DirName> ->Changes current working directory to DirName")
+    print('')
+    prYellow("upload <File Path> ->Uploads the file at File Path to the remote current working directory")
+    print('')
+    prYellow("download <Filename> ->Downloads the file at local current working directory ")
+    print('')
+
+
 def handle_response(msg):
     global curDir
     global DownloadFile
@@ -70,6 +84,11 @@ def handle_request(msg,sock):
     global curDir
     data = msg.split(' ')
     request = data[0]
+
+    if data[0] == 'help':
+        printHelp()
+        return
+
     if data[0] == 'mkdir':
         if len(data) < 2:
             prRed('Wrong usage')
