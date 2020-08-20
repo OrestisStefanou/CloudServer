@@ -33,6 +33,8 @@ def printHelp():
     print('')
     prYellow("download <Filename> ->Downloads the file at local current working directory ")
     print('')
+    prYellow("rm <Filename> ->Removes the file from remote current working directory ")
+    print('')
 
 
 def handle_response(msg):
@@ -180,6 +182,17 @@ def handle_request(msg,sock):
             msg = 'Download$${}'.format(path)
             tincanchat.send_msg(sock,msg)
 
+
+    if data[0] == 'rm':
+        if len(data) == 1:  #File name not given
+            prRed('File name not given')
+            print('')
+            return
+        else:
+            filename = data[1]
+            path = os.path.join(curDir,filename)
+            msg = 'rm$${}'.format(path)
+            tincanchat.send_msg(sock,msg)
 
 def handle_input(sock):
     #Prompt user for message and it to server    

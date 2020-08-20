@@ -95,6 +95,14 @@ def handle_request(data,q):
         return
 
 
+    if request == 'rm':
+        file_path = data[1]
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            q.put("Success$$File deleted")
+        else:
+            q.put("Error$$File does not exist") 
+
 def handle_client_recv(sock,addr):
     #Receive messages from client and broadcast them to
     #other clients until client disconnects
