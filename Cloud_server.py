@@ -98,10 +98,25 @@ def handle_request(data,q):
     if request == 'rm':
         file_path = data[1]
         if os.path.exists(file_path):
-            os.remove(file_path)
-            q.put("Success$$File deleted")
+            try:
+                os.remove(file_path)
+                q.put("Success$$File deleted")
+            except:
+                q.put("Error$$Use rmdir to remove a directory")
         else:
-            q.put("Error$$File does not exist") 
+            q.put("Error$$File does not exist")
+        return
+
+    if request == 'rmdir':
+        dir_path = data[1]
+        if os.path.exists(dir_path):
+            try:
+                os.rmdir(dir_path)
+                q.put("Success$$Directory deleted")
+            except:
+                q.put("Error$$Directory is not empty")
+        else:
+            q.put("Error$$Directory does not exist")  
 
 def handle_client_recv(sock,addr):
     #Receive messages from client and broadcast them to

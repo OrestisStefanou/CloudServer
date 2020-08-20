@@ -194,6 +194,19 @@ def handle_request(msg,sock):
             msg = 'rm$${}'.format(path)
             tincanchat.send_msg(sock,msg)
 
+
+    if data[0] == 'rmdir':
+        if len(data) == 1:  #Dir name not given
+            prRed('Directory name not given')
+            print('')
+            return
+        else:
+            dirname = data[1]
+            path = os.path.join(curDir,dirname)
+            msg = 'rmdir$${}'.format(path)
+            tincanchat.send_msg(sock,msg)
+
+
 def handle_input(sock):
     #Prompt user for message and it to server    
     while True:
