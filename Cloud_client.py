@@ -238,7 +238,8 @@ if __name__ == "__main__":
             #blocks
             (msgs,rest) = tincanchat.recv_msgs(sock,rest)
             for msg in msgs:
-                #print(msg)
+                msg = tincanchat.decrypt(msg)
+                print(msg)
                 if msg == '1':
                     prGreen('Login successfull')
                     print('')
@@ -266,6 +267,7 @@ if __name__ == "__main__":
             #blocks
             (msgs,rest) = tincanchat.recv_msgs(sock,rest)
             for msg in msgs:
+                msg = tincanchat.decrypt(msg)
                 handle_response(msg)
         except ConnectionError:
             print('Connection to server closed')

@@ -132,6 +132,7 @@ def handle_client_recv(sock,addr):
             handle_disconnect(sock,addr)
             break
         for msg in msgs:
+            msg = tincanchat.decrypt(msg)
             #msg = '{}: {}'.format(addr,msg)
             print(msg)
             #Split the message

@@ -35,6 +35,7 @@ def recv_msg(sock):
 
 def prep_msg(msg):
     #Prepare a string to be sent as a message
+    msg = encrypt(msg)
     msg += '\0'
     return msg.encode('utf-8')
 
@@ -62,5 +63,24 @@ def recv_msgs(sock,data=bytes()):
             raise ConnectionError()
         data = data + recvd
         (msgs,rest) = parse_recvd_data(data)
+    #msgs = [decrypt(msg) for msg in msgs]
     msgs = [msg.decode('utf-8') for msg in msgs]
     return (msgs,rest)
+
+#A very simple encryption method
+def encrypt(msg):
+    encrypted = ''
+    for x in msg:
+        if x != '\0':
+            char = ord(x)
+            encrypted = encrypted + chr(char + 1)
+    return encrypted
+
+
+def decrypt(msg):
+    decrypted = ''
+    for x in msg:
+        if x != '\0':
+            char = ord(x)
+            decrypted = decrypted + chr(char - 1)
+    return decrypted
