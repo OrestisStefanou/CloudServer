@@ -1,8 +1,19 @@
 import pymongo
-import os 
+import os
+from datetime import datetime, date, time, timezone 
 
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 mydb = myclient["CloudServer"]
+
+#Add a log message to the database
+def add_log(msg):
+    dt = datetime.now()
+    tt = dt.timetuple()
+
+    mycol = mydb['logs']
+    mydict = {"Message":msg,"Year":tt[0],"Month":tt[1],"Day":tt[2],"Hour":tt[3],"Minute":tt[4],"Second":tt[5]}
+
+    x = mycol.insert_one(mydict)
 
 def add_user(username,password,email):
 

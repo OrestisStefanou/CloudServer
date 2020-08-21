@@ -35,6 +35,8 @@ def printHelp():
     print('')
     prYellow("rm <Filename> ->Removes the file from remote current working directory ")
     print('')
+    prYellow("rmdir <Directory Name> ->Removes the directory from remote current working directory")
+    print('')
 
 
 def handle_response(msg):

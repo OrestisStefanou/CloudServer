@@ -19,6 +19,9 @@ def handle_request(data,q):
         username = data[1]
         password = data[2]
         verified = database.verify_user(username,password)
+        if verified == '1':
+            msg = 'User {} logged in'.format(username)
+            database.add_log(msg)
         q.put(verified)
         return
     
@@ -176,6 +179,8 @@ if __name__ == "__main__":
     print('Listening on {}'.format(addr))
     while True:
         client_sock,addr = listen_sock.accept()
+        msg = '{} connected to the server'.format(addr)
+        database.add_log(msg)
         q = queue.Queue()
         with lock:
             send_queues[client_sock.fileno()] = q
