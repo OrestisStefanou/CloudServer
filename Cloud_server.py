@@ -7,8 +7,8 @@ import os
 HOST = tincanchat.HOST
 PORT = tincanchat.PORT
 
-send_queues = {}
-openfiles = {}
+send_queues = {}    #Message Queues of clients.
+openfiles = {}      #Openfiles that clients are uploading
 lock = threading.Lock()
 
 def handle_request(data,q):
@@ -65,6 +65,15 @@ def handle_request(data,q):
 
     if request == 'CreateFile':
         path = data[1]
+        userDir = data[2]
+        split_path = os.path.split(userDir)
+        user_name = split_path[1]
+        user_dir_size = database.get_users_dir_size(user_name)
+        file_size = data[3]
+        cur_user_dir_size = database.get_directory_size(userDir)
+        if cur_user_dir_size + int(file_size) > user_dir_size:
+            q.put('Error$$Not enough space')
+            return
         f = open(path,"w")
         openfiles[path] = f
         return
@@ -72,14 +81,20 @@ def handle_request(data,q):
     if request == 'Line':
         line = data[1]
         filename = data[2]
-        openfiles[filename].write(line)
+        try:
+            openfiles[filename].write(line)
+        except:
+            return
         return
     
     if request == 'CloseFile':
         filename = data[1]
-        openfiles[filename].close()
-        del openfiles[filename]
-        q.put("Success$$File uploaded")
+        try:
+            openfiles[filename].close()
+            del openfiles[filename]
+            q.put("Success$$File uploaded")
+        except:
+            return
         return
 
     if request == 'Download':

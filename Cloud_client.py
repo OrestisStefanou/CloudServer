@@ -159,7 +159,8 @@ def handle_request(msg,sock):
             filename = path[1]
             try:
                 f = open(data[1],"r")
-                msg = 'CreateFile$${}'.format(os.path.join(curDir,filename))
+                file_size = os.path.getsize(data[1])
+                msg = 'CreateFile$${}$${}$${}'.format(os.path.join(curDir,filename),homeDir,file_size)
                 tincanchat.send_msg(sock,msg)
                 for line in f:
                     msg = 'Line$${}$${}'.format(line,os.path.join(curDir,filename))
@@ -239,7 +240,7 @@ if __name__ == "__main__":
             (msgs,rest) = tincanchat.recv_msgs(sock,rest)
             for msg in msgs:
                 msg = tincanchat.decrypt(msg)
-                print(msg)
+                #print(msg)
                 if msg == '1':
                     prGreen('Login successfull')
                     print('')

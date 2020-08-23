@@ -15,11 +15,12 @@ def add_log(msg):
 
     x = mycol.insert_one(mydict)
 
-def add_user(username,password,email):
+#Create a new user.dir_size is the size that the user can use in bytes
+def add_user(username,password,email,dir_size):
 
     mycol = mydb["users"]
 
-    mydict = { "Username": username, "Password": password, "Email":email }
+    mydict = { "Username": username, "Password": password, "Email":email,"DirSize":dir_size }
 
     x = mycol.insert_one(mydict)
 
@@ -48,3 +49,36 @@ def verify_user(username,password):
         else:
             return '0'
     return '0'
+
+
+#Get the size of a directory in bytes
+def get_directory_size(directory):
+    total = 0
+    try:
+        for entry in os.scandir(directory):
+            if entry.is_file():
+                # if it's a file, use stat() function
+                total += entry.stat().st_size
+            elif entry.is_dir():
+                # if it's a directory, recursively call this function
+                total += get_directory_size(entry.path)
+    except NotADirectoryError:
+        # if `directory` isn't a directory, get the file size then
+        return os.path.getsize(directory)
+    except PermissionError:
+        # if for whatever reason we can't open the folder, return 0
+        return 0
+    return total
+
+
+#Get user's directory size
+def get_users_dir_size(username):
+    mycol = mydb["users"]
+
+    myquery = { "Username": username }
+
+    mydoc = mycol.find(myquery)
+
+    for x in mydoc:
+        #print(x)
+        return x['DirSize']
