@@ -25,7 +25,9 @@ DownloadFile = None     #File object in case of download from the server
 def printHelp():
     prYellow("mkdir <DirName> ->creates a new directory")
     print('')
-    prYellow("ls <DirName> ->Shows the files and subdirs of DirName")
+    prYellow("ls->Shows the files and subdirs of remote current working directory")
+    print('')
+    prYellow("ls-s->Shows the size of the files and subdirs of remote current working directory")
     print('')
     prYellow("cd <DirName> ->Changes current working directory to DirName")
     print('')
@@ -36,6 +38,8 @@ def printHelp():
     prYellow("rm <Filename> ->Removes the file from remote current working directory ")
     print('')
     prYellow("rmdir <Directory Name> ->Removes the directory from remote current working directory")
+    print('')
+    prYellow("clouspace ->Shows the available space in the cloud")
     print('')
 
 
@@ -118,7 +122,7 @@ def handle_request(msg,sock):
                 print('')
                 return
         else:
-            msg = 'ls$$./{}'.format(data[1])
+            msg = 'ls$$./{}'.format(os.path.join(curDir,data[1]))
             try:
                 tincanchat.send_msg(sock,msg)
                 return
@@ -127,6 +131,27 @@ def handle_request(msg,sock):
                 print('')
                 return
     
+
+    if data[0] == 'ls-s':
+        if len(data) == 1:  #List current directory
+            msg = 'ls -s$$./{}'.format(curDir)
+            try:
+                tincanchat.send_msg(sock,msg)
+                return
+            except (BrokenPipeError,ConnectionError):
+                prRed('Something went wrong')
+                print('')
+                return
+        else:
+            msg = 'ls -s$$./{}'.format(os.path.join(curDir,data[1]))
+            try:
+                tincanchat.send_msg(sock,msg)
+                return
+            except (BrokenPipeError,ConnectionError):
+                prRed('Something went wrong')
+                print('')
+                return        
+
 
     if data[0] == 'cd':
         if len(data) == 1:  #Change current directory to home directory
@@ -208,6 +233,14 @@ def handle_request(msg,sock):
             path = os.path.join(curDir,dirname)
             msg = 'rmdir$${}'.format(path)
             tincanchat.send_msg(sock,msg)
+    
+
+    if data[0] == 'cloudspace':
+        #Get username from the homeDir
+        split_path = os.path.split(homeDir)
+        username = split_path[1]
+        msg = 'cloudspace$${}$$./{}'.format(username,homeDir)
+        tincanchat.send_msg(sock,msg)
 
 
 def handle_input(sock):
@@ -225,7 +258,7 @@ def handle_input(sock):
 if __name__ == "__main__":
     sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     sock.connect((HOST,PORT))
-    print('Connected to {}:{}'.format(HOST,PORT))
+    #print('Connected to {}:{}'.format(HOST,PORT))
 
     rest = bytes()
     #User authentication
@@ -244,7 +277,7 @@ if __name__ == "__main__":
                 if msg == '1':
                     prGreen('Login successfull')
                     print('')
-                    prYellow('Enter your request and press Enter.To input another request press Enter.')
+                    prYellow('Enter your request and press Enter.\nTo input another request press Enter again.\nTo quit press q.\nFor help type help\n')
                     print('')
                     homeDir = os.path.join('Users',username)
                     curDir = os.path.join('Users',username)

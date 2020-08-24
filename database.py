@@ -82,3 +82,12 @@ def get_users_dir_size(username):
     for x in mydoc:
         #print(x)
         return x['DirSize']
+
+#Update a user's directory size
+def update_dir_size(username,size):
+    mycol = mydb['users']
+
+    myquery = { "Username":username }
+    new_values = { "$set":{ "DirSize":size } }
+
+    mycol.update_one(myquery,new_values)

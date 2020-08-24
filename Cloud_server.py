@@ -50,6 +50,25 @@ def handle_request(data,q):
             q.put('Error$$Directory does not exist')
         return
     
+
+    if request == 'ls -s':
+        dirName = data[1]
+        try:
+            files = os.listdir(dirName)
+            for file in files:
+                path = os.path.join(dirName,file)
+                if os.path.isdir(path):
+                    size = database.get_directory_size(path)
+                    response = 'Dir$${} {} Kb'.format(file,size/1000)
+                    q.put(response)
+                else:
+                    size = os.path.getsize(path)
+                    response = 'File$${} {} Kb'.format(file,size/1000)
+                    q.put(response)
+        except:
+            q.put("Error$$Directory does not exist")
+        return
+    
     if request == 'cd':
         path = data[1]
         try:
@@ -134,7 +153,19 @@ def handle_request(data,q):
             except:
                 q.put("Error$$Directory is not empty")
         else:
-            q.put("Error$$Directory does not exist")  
+            q.put("Error$$Directory does not exist")
+        return
+
+
+    if request == 'cloudspace':
+        username = data[1]
+        dir_path = data[2]
+        dir_size = database.get_users_dir_size(username)
+        cur_dir_size = database.get_directory_size(dir_path)
+        response = 'Success$${}/{} Kb'.format(cur_dir_size,dir_size)
+        q.put(response)
+        return
+
 
 def handle_client_recv(sock,addr):
     #Receive messages from client and broadcast them to
