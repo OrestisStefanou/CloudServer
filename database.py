@@ -20,7 +20,7 @@ def add_user(username,password,email,dir_size):
 
     mycol = mydb["users"]
 
-    mydict = { "Username": username, "Password": password, "Email":email,"DirSize":dir_size }
+    mydict = { "Username": username, "Password": password, "Email":email,"DirSize":dir_size *1024 }
 
     x = mycol.insert_one(mydict)
 
@@ -88,6 +88,6 @@ def update_dir_size(username,size):
     mycol = mydb['users']
 
     myquery = { "Username":username }
-    new_values = { "$set":{ "DirSize":size } }
+    new_values = { "$set":{ "DirSize":size * 1024 } }
 
     mycol.update_one(myquery,new_values)

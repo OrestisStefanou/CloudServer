@@ -134,6 +134,20 @@ def handle_request(data,q):
 
     if request == 'rm':
         file_path = data[1]
+        filename = os.path.split(file_path)[1]
+        if filename == '*':
+            dirName = os.path.split(file_path)[0]
+            try:
+                files = os.listdir(dirName)
+                for file in files:
+                    path = os.path.join(dirName,file)
+                    if os.path.isdir(path):
+                        continue
+                    else:
+                        os.remove(path)
+            except:
+                q.put('Error$$Directory does not exist')
+            return
         if os.path.exists(file_path):
             try:
                 os.remove(file_path)

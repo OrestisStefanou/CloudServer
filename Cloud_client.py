@@ -37,6 +37,8 @@ def printHelp():
     print('')
     prYellow("rm <Filename> ->Removes the file from remote current working directory ")
     print('')
+    prYellow("rm * ->Removes all the files from remote current working directory(Not the directories)")
+    print('')
     prYellow("rmdir <Directory Name> ->Removes the directory from remote current working directory")
     print('')
     prYellow("clouspace ->Shows the available space in the cloud")
