@@ -33,6 +33,8 @@ def printHelp():
     print('')
     prYellow("upload <File Path> ->Uploads the file at File Path to the remote current working directory")
     print('')
+    prYellow("uploadDir <Dir Path> ->Uploads the directory(not the subdirs) at Dir Path to the remote current working directory")
+    print('')
     prYellow("download <Filename> ->Downloads the file at local current working directory ")
     print('')
     prYellow("rm <Filename> ->Removes the file from remote current working directory ")
@@ -43,6 +45,24 @@ def printHelp():
     print('')
     prYellow("clouspace ->Shows the available space in the cloud")
     print('')
+
+def upload_file(filename,path,sock):
+    try:
+        f = open(path,"r")
+        file_size = os.path.getsize(path)
+        msg = 'CreateFile$${}$${}$${}'.format(os.path.join(curDir,filename),homeDir,file_size)
+        tincanchat.send_msg(sock,msg)
+        for line in f:
+            msg = 'Line$${}$${}'.format(line,os.path.join(curDir,filename))
+            tincanchat.send_msg(sock,msg)
+        msg = 'CloseFile$${}'.format(os.path.join(curDir,filename))
+        tincanchat.send_msg(sock,msg)
+        f.close()
+    except:
+        prRed("File does not exist")
+        print('')
+        return
+
 
 
 def handle_response(msg):
@@ -184,7 +204,7 @@ def handle_request(msg,sock):
         else:
             path = os.path.split(data[1])
             filename = path[1]
-            try:
+            """try:
                 f = open(data[1],"r")
                 file_size = os.path.getsize(data[1])
                 msg = 'CreateFile$${}$${}$${}'.format(os.path.join(curDir,filename),homeDir,file_size)
@@ -198,8 +218,32 @@ def handle_request(msg,sock):
             except:
                 prRed("File does not exist")
                 print('')
-                return
+                return"""
+            upload_file(filename,data[1],sock)
 
+
+    if data[0] == 'uploadDir':
+        if len(data) == 1:
+            prRed('Directory path not given')
+            print('')
+            return
+        else:
+            dirPath = data[1]
+            try:
+                files = os.listdir(dirPath)
+                dirName = os.path.split(dirPath)[1]
+                msg = 'mkdir$${}$$./{}'.format(dirName,curDir)
+                tincanchat.send_msg(sock,msg)
+                curDir = os.path.join(curDir,dirName)
+                for file in files:
+                    path = os.path.join(dirPath,file)
+                    if os.path.isdir(path):
+                        continue
+                    else:
+                        upload_file(file,path,sock)
+            except:
+                prRed('Directory does not exist')
+                print('')
 
     if data[0] == 'download':
         if len(data) == 1:  #File name not given
