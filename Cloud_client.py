@@ -19,6 +19,7 @@ PORT = tincanchat.PORT
 
 homeDir = ''
 curDir = ''
+downloadDir = '/home/orestis/Downloads'
 DownloadFile = None     #File object in case of download from the server
 
 
@@ -67,6 +68,7 @@ def upload_file(filename,path,sock):
 
 def handle_response(msg):
     global curDir
+    global downloadDir
     global DownloadFile
     data = msg.split('$$')
     if data[0] == 'Error':
@@ -94,20 +96,44 @@ def handle_response(msg):
     
 
     if data[0] == 'CreateFile':
-        path = os.path.split(data[1])
-        filename = path[1]
-        DownloadFile = open(filename,"w")
-        return
+        try:
+            path = os.path.split(data[1])
+            filename = os.path.join(downloadDir,path[1])
+            DownloadFile = open(filename,"w")
+            return
+        except:
+            return
     
     if data[0] == 'Line':
-        line = data[1]
-        DownloadFile.write(line)
-        return
+        try:
+            line = data[1]
+            DownloadFile.write(line)
+            return
+        except:
+            return
     
     if data[0] == 'CloseFile':
-        DownloadFile.close()
-        prGreen('File downloaded')
-        print('')
+        try:
+            DownloadFile.close()
+            prGreen('File downloaded')
+            print('')
+            return
+        except:
+            return
+    
+    if data[0] == 'Mkdir':
+        dirName = data[1]
+        if not os.path.exists(os.path.join(downloadDir,dirName)):
+            downloadDir = os.path.join(downloadDir,dirName)
+            os.mkdir(downloadDir)
+            curDir = os.path.join(curDir,dirName)
+            return
+        else:
+            prRed('Directory already exists')
+            return
+    
+    if data[0] == 'DownloadDirComplete':
+        downloadDir = os.path.split(downloadDir)[0]
         return
 
 def handle_request(msg,sock):
@@ -254,6 +280,18 @@ def handle_request(msg,sock):
             filename = data[1]
             path = os.path.join(curDir,filename)
             msg = 'Download$${}'.format(path)
+            tincanchat.send_msg(sock,msg)
+
+
+    if data[0] == 'downloadDir':
+        if len(data) == 1:  
+            prRed('Directory name not given')
+            print('')
+            return
+        else:
+            dirName = data[1]
+            path = os.path.join(curDir,dirName)
+            msg = 'DownloadDir$${}'.format(path)
             tincanchat.send_msg(sock,msg)
 
 

@@ -132,6 +132,28 @@ def handle_request(data,q):
         return
 
 
+    if request == 'DownloadDir':
+        dirPath = data[1]
+        try:
+            files = os.listdir(dirPath)
+            response = 'Mkdir$${}'.format(os.path.split(dirPath)[1])
+            q.put(response)
+            for file in files:
+                path = os.path.join(dirPath,file)
+                f = open(path,"r")
+                msg = 'CreateFile$${}'.format(path)
+                q.put(msg)
+                for line in f:
+                    msg = 'Line$${}'.format(line)
+                    q.put(msg)
+                q.put('CloseFile')
+                f.close()
+            q.put('DownloadDirComplete')
+        except:
+            q.put("Error$$Directory does not exist")
+        return
+
+
     if request == 'rm':
         file_path = data[1]
         filename = os.path.split(file_path)[1]
